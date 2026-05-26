@@ -1,22 +1,74 @@
-# AeroBeat Tool Template
+# aerobeat-vendor-godot-gltf
 
-This is the official template for creating **Tool** repositories within the current AeroBeat v1 architecture.
+Godot-native vendor runtime loading surface for AeroBeat GLTF/GLB scene ingestion.
 
-It should be read against the locked product direction from `aerobeat-docs`:
+## Architecture role
 
-- **Primary release target:** PC community first
-- **Official v1 gameplay features:** Boxing and Flow
-- **Official v1 gameplay input:** camera only
-- **Tool stance:** tools should stay workflow-oriented and gameplay-mode agnostic enough to support the current product slice without implying equal-status future gameplay/input/platform scope
-- **Tool lane ownership:** shared tool-side DTOs, progress/result models, and workflow interfaces belong in `aerobeat-tool-core`; concrete authoring/import/export/validation tooling belongs in specific `aerobeat-tool-*` repos
+`aerobeat-vendor-godot-gltf` owns the narrow vendor slice that speaks directly to Godot's runtime `GLTFDocument` / `GLTFState` API. It is the concrete place where AeroBeat can load GLTF-family scene payloads into live Godot scene data without pushing Godot-specific parsing concerns into a higher-level tool facade.
 
-## 📋 Repository Details
+This repo is intentionally vendor-oriented, not workflow-oriented:
 
-- **Type:** Tool template
-- **License:** **Mozilla Public License 2.0 (MPL 2.0)**
-- **Dependency contract:**
-  - `aerobeat-tool-core` — required shared tool/workflow contract
-  - additional adjacent lane/core repos only when the specific tool actually consumes them (commonly `aerobeat-content-core` or `aerobeat-asset-core`)
+- it normalizes and validates GLTF/GLB source descriptors
+- it loads packaged (`res://`) and external (`user://` or absolute-path) scene sources through the same Godot-native runtime path
+- it can generate a Godot scene from a successful load result
+- it leaves package discovery, environment policy, workout-package selection, persistence, and user-facing orchestration to higher-level tool repos
+
+## Current contract slice
+
+The first truthful slice is deliberately small:
+
+- `globals/aero_godot_gltf_contract.gd`
+  - result keys and error codes
+  - source normalization/validation
+  - source kind (`file`, `buffer`)
+  - source location (`packaged`, `external`)
+  - supported format vocabulary (`gltf`, `glb`)
+- `loaders/aero_godot_gltf_runtime_loader.gd`
+  - `load_source(source, flags := 0)` parses a GLTF/GLB source into `GLTFDocument` + `GLTFState`
+  - `generate_scene(load_result, ...)` instantiates a Godot node tree from a successful load result
+  - `load_scene(source, flags := 0, scene_options := {})` convenience path for load + instantiate
+  - `get_last_result()` exposes the last vendor result for debugging/handoff use
+
+The design keeps one vendor-owned runtime architecture for both packaged/internal and external/local-package ingestion: a normalized source dictionary plus the Godot runtime loader. Future tool-facing repos can wrap this with workout-package resolution or environment-specific policies without changing the vendor contract.
+
+## Public surface example
+
+```gdscript
+var loader := AeroGodotGltfRuntimeLoader.new()
+
+var result := loader.load_scene({
+  "path": "res://fixtures/workout_scene.glb"
+})
+
+if result.get("success", false):
+  var scene_root: Node = result["detail"]["scene"]
+  add_child(scene_root)
+else:
+  push_error(result.get("message", "GLTF load failed"))
+```
+
+External/local-package sources use the same surface:
+
+```gdscript
+var result := loader.load_scene({
+  "path": "/absolute/path/to/workout-package/environment.glb"
+})
+```
+
+A future package loader can also hand this repo extracted bytes via `{"kind": "buffer", "bytes": ..., "format": "glb"}` when path-based loading is not the right transport.
+
+## Dependency expectations
+
+For this vendor repo itself:
+
+- runtime dependency: Godot `4.6.2 stable standard`
+- no required dependency on `aerobeat-tool-core` for the current vendor slice
+
+For a future tool-facing facade repo above this layer:
+
+- depend on this vendor repo when you need Godot-native runtime GLTF/GLB ingestion
+- keep package selection, workout-package storage rules, editor/CLI UX, and environment-policy decisions in the tool repo
+- pass resolved file paths or extracted bytes into this vendor repo rather than teaching the vendor layer package semantics
 
 ## GodotEnv development flow
 
@@ -28,8 +80,6 @@ This repo uses the AeroBeat GodotEnv package convention.
 - Hidden workbench project: `.testbed/project.godot`
 - Repo-local unit tests: `.testbed/tests/`
 
-The repo root remains the package/published boundary for downstream consumers. Day-to-day development, debugging, and validation happen from the hidden `.testbed/` workbench using the pinned OpenClaw toolchain: Godot `4.6.2 stable standard`.
-
 ### Restore dev/test dependencies
 
 From the repo root:
@@ -39,17 +89,7 @@ cd .testbed
 godotenv addons install
 ```
 
-That restores this repo's current dev/test manifest into `.testbed/addons/`. Canonically, Tool templates should keep the baseline manifest narrow: `aerobeat-tool-core` plus test-only tooling.
-
-### Open the workbench
-
-From the repo root:
-
-```bash
-godot --editor --path .testbed
-```
-
-Use this `.testbed/` project as the canonical direct-development and bugfinding surface for tool-template work.
+The current manifest is intentionally narrow: `gut` only.
 
 ### Import smoke check
 
@@ -69,12 +109,3 @@ godot --headless --path .testbed --script addons/gut/gut_cmdln.gd \
   -ginclude_subdirs \
   -gexit
 ```
-
-### Validation notes
-
-- `.testbed/addons.jsonc` is the committed dev/test dependency contract.
-- The canonical template manifest for this repo is `aerobeat-tool-core` + `gut`.
-- `aerobeat-tool-core` is currently pinned to `main` intentionally because the repo does not yet have release tags; switch to a tag once tagged releases exist.
-- If a concrete tool needs adjacent lane repos, add them intentionally rather than restoring a universal `aerobeat-core` baseline.
-- Repo-local unit tests live under `.testbed/tests/` and currently validate repo metadata plus the template stub contract.
-- The current package shape is consumed from the repo root (`subfolder: "/"`) for downstream installs.
