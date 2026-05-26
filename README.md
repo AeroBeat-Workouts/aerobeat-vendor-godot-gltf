@@ -109,3 +109,16 @@ godot --headless --path .testbed --script addons/gut/gut_cmdln.gd \
   -ginclude_subdirs \
   -gexit
 ```
+
+### GLB proof fixture coverage
+
+The hidden testbed now carries a concrete packaged GLB proof fixture copied from the shared environment fixture set:
+
+- source fixture: `/home/derrick/.openclaw/workspace/projects/aerobeat/aerobeat-environment-community/.testbed/assets/models/alien-planet.glb`
+- packaged/internal proof fixture: `.testbed/tests/fixtures/alien-planet.glb`
+- external proof path: a temporary absolute copy under `/tmp/aerobeat-vendor-godot-gltf-tests/alien-planet-external.glb`
+
+The runtime-loader test suite proves both code paths against the same binary asset:
+
+- packaged/internal `res://tests/fixtures/alien-planet.glb`
+- external absolute-path copy created during the test run and removed afterward
