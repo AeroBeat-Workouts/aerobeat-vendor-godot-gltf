@@ -44,6 +44,21 @@ static func get_default_source() -> Dictionary:
 		"metadata": {},
 	}
 
+static func get_default_transform() -> Dictionary:
+	return {
+		"position": Vector3.ZERO,
+		"rotation_degrees": Vector3.ZERO,
+		"scale": Vector3.ONE,
+	}
+
+static func get_default_instance() -> Dictionary:
+	return {
+		"name": "",
+		"source": get_default_source(),
+		"transform": get_default_transform(),
+		"metadata": {},
+	}
+
 static func normalize_source(source: Dictionary) -> Dictionary:
 	var normalized := get_default_source()
 	for key in source.keys():
@@ -121,6 +136,45 @@ static func validate_source(source: Dictionary) -> Dictionary:
 
 	return {}
 
+static func normalize_transform(transform_config: Dictionary) -> Dictionary:
+	var normalized := get_default_transform()
+	for key in transform_config.keys():
+		normalized[key] = transform_config[key]
+
+	normalized["position"] = variant_to_vector3(normalized.get("position", Vector3.ZERO), Vector3.ZERO)
+	normalized["rotation_degrees"] = variant_to_vector3(normalized.get("rotation_degrees", Vector3.ZERO), Vector3.ZERO)
+	normalized["scale"] = variant_to_vector3(normalized.get("scale", Vector3.ONE), Vector3.ONE)
+	return normalized
+
+static func normalize_instance(instance: Dictionary) -> Dictionary:
+	var normalized := get_default_instance()
+	for key in instance.keys():
+		normalized[key] = instance[key]
+
+	normalized["name"] = String(normalized.get("name", "")).strip_edges()
+	if typeof(normalized.get("source", {})) != TYPE_DICTIONARY:
+		normalized["source"] = {}
+	if typeof(normalized.get("transform", {})) != TYPE_DICTIONARY:
+		normalized["transform"] = {}
+	if typeof(normalized.get("metadata", {})) != TYPE_DICTIONARY:
+		normalized["metadata"] = {}
+
+	normalized["source"] = normalize_source(normalized["source"])
+	normalized["transform"] = normalize_transform(normalized["transform"])
+	return normalized
+
+static func validate_instance(instance: Dictionary) -> Dictionary:
+	var normalized := normalize_instance(instance)
+	var source_validation := validate_source(normalized.get("source", {}))
+	if not source_validation.is_empty():
+		return {
+			"field": "source",
+			"message": "GLTF instance source validation failed.",
+			"instance": normalized.duplicate(true),
+			"source_validation": source_validation.duplicate(true),
+		}
+	return {}
+
 static func infer_format_from_path(path: String) -> String:
 	var extension := path.get_extension().strip_edges().to_lower()
 	if extension in FORMATS:
@@ -135,6 +189,22 @@ static func infer_location_from_path(path: String) -> String:
 	if path.is_absolute_path():
 		return LOCATION_EXTERNAL
 	return LOCATION_EXTERNAL
+
+static func variant_to_vector3(value: Variant, default_value: Vector3) -> Vector3:
+	if value is Vector3:
+		return value
+	if value is Array:
+		var array_value: Array = value
+		if array_value.size() >= 3:
+			return Vector3(float(array_value[0]), float(array_value[1]), float(array_value[2]))
+	if value is Dictionary:
+		var dictionary_value: Dictionary = value
+		return Vector3(
+			float(dictionary_value.get("x", default_value.x)),
+			float(dictionary_value.get("y", default_value.y)),
+			float(dictionary_value.get("z", default_value.z))
+		)
+	return default_value
 
 static func ok(detail: Dictionary = {}) -> Dictionary:
 	return {

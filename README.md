@@ -15,7 +15,7 @@ This repo is intentionally vendor-oriented, not workflow-oriented:
 
 ## Current contract slice
 
-The first truthful slice is deliberately small:
+The current truthful slice stays vendor-focused while covering both single-scene and multi-instance loading:
 
 - `globals/aero_godot_gltf_contract.gd`
   - result keys and error codes
@@ -23,10 +23,13 @@ The first truthful slice is deliberately small:
   - source kind (`file`, `buffer`)
   - source location (`packaged`, `external`)
   - supported format vocabulary (`gltf`, `glb`)
+  - instance-transform normalization for `position`, `rotation_degrees`, and `scale`
 - `loaders/aero_godot_gltf_runtime_loader.gd`
   - `load_source(source, flags := 0)` parses a GLTF/GLB source into `GLTFDocument` + `GLTFState`
   - `generate_scene(load_result, ...)` instantiates a Godot node tree from a successful load result
   - `load_scene(source, flags := 0, scene_options := {})` convenience path for load + instantiate
+  - `load_scene_instance(source, flags := 0, scene_options := {}, instance_options := {})` wraps one loaded GLTF scene under a transformable parent `Node3D`
+  - `load_scene_instances(instances, flags := 0, scene_options := {})` loads multiple independent GLTF assets under one aggregate root with per-instance transforms applied after load
   - `get_last_result()` exposes the last vendor result for debugging/handoff use
 
 The design keeps one vendor-owned runtime architecture for both packaged/internal and external/local-package ingestion: a normalized source dictionary plus the Godot runtime loader. Future tool-facing repos can wrap this with workout-package resolution or environment-specific policies without changing the vendor contract.
@@ -54,6 +57,36 @@ var result := loader.load_scene({
   "path": "/absolute/path/to/workout-package/environment.glb"
 })
 ```
+
+Multi-instance placement stays in the vendor layer too:
+
+```gdscript
+var result := loader.load_scene_instances([
+  {
+    "name": "LeftPlanet",
+    "source": {"path": "res://fixtures/alien-planet.glb"},
+    "transform": {
+      "position": [-2.0, 0.0, 0.0],
+      "rotation_degrees": [0.0, -15.0, 0.0],
+      "scale": [1.0, 1.0, 1.0]
+    }
+  },
+  {
+    "name": "RightPlanet",
+    "source": {"path": "/absolute/path/to/environment.glb"},
+    "transform": {
+      "position": [2.0, 0.5, 0.0],
+      "rotation_degrees": [0.0, 35.0, 0.0],
+      "scale": [1.25, 1.25, 1.25]
+    }
+  }
+], 0, {"root_name": "EnvironmentInstances"})
+
+if result.get("success", false):
+  add_child(result["detail"]["scene"])
+```
+
+Each instance gets its own parent `Node3D`, so higher-level repos can attach multiple GLTF assets independently and still keep transforms outside the imported scene payload itself.
 
 A future package loader can also hand this repo extracted bytes via `{"kind": "buffer", "bytes": ..., "format": "glb"}` when path-based loading is not the right transport.
 
@@ -109,6 +142,35 @@ godot --headless --path .testbed --script addons/gut/gut_cmdln.gd \
   -ginclude_subdirs \
   -gexit
 ```
+
+### Human proving surface
+
+The hidden testbed now includes an interactive multi-instance proving surface:
+
+- scene: `.testbed/scenes/multi_gltf_proving_surface.tscn`
+- script: `.testbed/scripts/multi_gltf_proving_surface.gd`
+- fixture: `.testbed/tests/fixtures/alien-planet.glb`
+
+Open the hidden testbed project and run that scene to verify:
+
+- two independent GLTF instances load under separate parent anchors
+- parent `position`, `rotation_degrees`, and `scale` controls apply after load
+- each instance can be adjusted without mutating the other imported scene
+
+For a quick headless smoke check of the proving surface wiring itself:
+
+```bash
+godot --headless --path .testbed --script res://scripts/validate_multi_gltf_proving_surface.gd
+```
+
+Keyboard controls inside the proving surface:
+
+- `1` / `2` — select the left or right instance
+- `Tab` — cycle the selected instance
+- `P` — cycle parent position presets
+- `R` — cycle parent rotation presets
+- `S` — cycle parent scale presets
+- `V` — print a transform snapshot to the Godot output log
 
 ### GLB proof fixture coverage
 
