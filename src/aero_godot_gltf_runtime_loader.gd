@@ -2,8 +2,8 @@ class_name AeroGodotGltfRuntimeLoader
 extends RefCounted
 
 const _CONTRACT_CANDIDATE_PATHS: Array[String] = [
-	"res://../globals/aero_godot_gltf_contract.gd",
-	"res://addons/aerobeat-vendor-godot-gltf/globals/aero_godot_gltf_contract.gd",
+	"res://addons/aerobeat-vendor-godot-gltf/src/aero_godot_gltf_contract.gd",
+	"res://../src/aero_godot_gltf_contract.gd",
 ]
 const DEFAULT_MULTI_SCENE_NAME := "AeroGodotGltfInstances"
 

@@ -1,10 +1,10 @@
 extends Node3D
 
 const LOADER_CANDIDATE_PATHS := [
-	"res://../loaders/aero_godot_gltf_runtime_loader.gd",
-	"res://addons/aerobeat-vendor-godot-gltf/loaders/aero_godot_gltf_runtime_loader.gd",
+	"res://addons/aerobeat-vendor-godot-gltf/src/aero_godot_gltf_runtime_loader.gd",
+	"res://../src/aero_godot_gltf_runtime_loader.gd",
 ]
-const FIXTURE_PATH := "res://tests/fixtures/alien-planet.glb"
+const FIXTURE_PATH := "res://assets/models/alien-planet.glb"
 const POSITION_PRESETS := [
 	Vector3(-3.0, 0.0, 0.0),
 	Vector3(0.0, 0.5, -1.5),

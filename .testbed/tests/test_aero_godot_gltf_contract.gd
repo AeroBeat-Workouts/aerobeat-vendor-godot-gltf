@@ -1,8 +1,8 @@
 extends GutTest
 
 const CONTRACT_CANDIDATE_PATHS := [
-	"res://../globals/aero_godot_gltf_contract.gd",
-	"res://addons/aerobeat-vendor-godot-gltf/globals/aero_godot_gltf_contract.gd",
+	"res://addons/aerobeat-vendor-godot-gltf/src/aero_godot_gltf_contract.gd",
+	"res://../src/aero_godot_gltf_contract.gd",
 ]
 
 func _load_contract() -> Script:
@@ -54,7 +54,7 @@ func test_contract_normalizes_instance_transform_vectors_from_arrays_and_diction
 	var instance: Dictionary = contract.call("normalize_instance", {
 		"name": "PlanetA",
 		"source": {
-			"path": "res://tests/fixtures/alien-planet.glb",
+			"path": "res://assets/models/alien-planet.glb",
 		},
 		"transform": {
 			"position": [1, 2, 3],
