@@ -287,5 +287,11 @@ static func _clean_extension(pathish: String) -> String:
 	return extension.trim_prefix(".")
 
 static func _pathish_part(pathish: String) -> String:
-	var without_fragment := String(pathish).strip_edges().split("#", false, 1)[0]
-	return without_fragment.split("?", false, 1)[0]
+	var working := String(pathish).strip_edges()
+	var fragment_index := working.find("#")
+	if fragment_index != -1:
+		working = working.substr(0, fragment_index)
+	var query_index := working.find("?")
+	if query_index != -1:
+		working = working.substr(0, query_index)
+	return working

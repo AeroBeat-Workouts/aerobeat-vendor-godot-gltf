@@ -29,6 +29,18 @@ func test_contract_normalizes_packaged_and_external_file_sources() -> void:
 	assert_eq(external.get("format"), "glb")
 	assert_eq(external.get("location"), "external")
 
+func test_contract_normalizes_remote_url_sources() -> void:
+	var contract := _load_contract()
+	assert_true(contract != null, "Expected AeroGodotGltfContract script to load")
+
+	var remote: Dictionary = contract.call("normalize_source", {
+		"url": "https://example.com/models/alien-planet.glb?cache=1"
+	})
+	assert_eq(remote.get("kind"), "url")
+	assert_eq(remote.get("format"), "glb")
+	assert_eq(remote.get("location"), "remote")
+	assert_eq(remote.get("url"), "https://example.com/models/alien-planet.glb?cache=1")
+
 func test_contract_rejects_missing_file_path() -> void:
 	var contract := _load_contract()
 	assert_true(contract != null, "Expected AeroGodotGltfContract script to load")

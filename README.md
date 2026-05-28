@@ -20,8 +20,8 @@ The current truthful slice stays vendor-focused while covering both single-scene
 - `globals/aero_godot_gltf_contract.gd`
   - result keys and error codes
   - source normalization/validation
-  - source kind (`file`, `buffer`)
-  - source location (`packaged`, `external`)
+  - source kind (`file`, `buffer`, `url`)
+  - source location (`packaged`, `external`, `remote`)
   - supported format vocabulary (`gltf`, `glb`)
   - instance-transform normalization for `position`, `rotation_degrees`, and `scale`
 - `loaders/aero_godot_gltf_runtime_loader.gd`
@@ -30,6 +30,8 @@ The current truthful slice stays vendor-focused while covering both single-scene
   - `load_scene(source, flags := 0, scene_options := {})` convenience path for load + instantiate
   - `load_scene_instance(source, flags := 0, scene_options := {}, instance_options := {})` wraps one loaded GLTF scene under a transformable parent `Node3D`
   - `load_scene_instances(instances, flags := 0, scene_options := {})` loads multiple independent GLTF assets under one aggregate root with per-instance transforms applied after load
+  - `unload_result(result)` explicitly frees loaded scene roots and cleans temporary URL download artifacts
+  - `unload_last_result()` explicitly unloads the last vendor result
   - `get_last_result()` exposes the last vendor result for debugging/handoff use
 
 The design keeps one vendor-owned runtime architecture for both packaged/internal and external/local-package ingestion: a normalized source dictionary plus the Godot runtime loader. Future tool-facing repos can wrap this with workout-package resolution or environment-specific policies without changing the vendor contract.
@@ -89,6 +91,16 @@ if result.get("success", false):
 Each instance gets its own parent `Node3D`, so higher-level repos can attach multiple GLTF assets independently and still keep transforms outside the imported scene payload itself.
 
 A future package loader can also hand this repo extracted bytes via `{"kind": "buffer", "bytes": ..., "format": "glb"}` when path-based loading is not the right transport.
+
+Remote URL transport also stays vendor-owned. For example, a tool-facing facade can ask the runtime to fetch and load:
+
+```gdscript
+var result := loader.load_scene({
+  "kind": "url",
+  "url": "http://127.0.0.1:8123/alien-planet.glb",
+  "format": "glb"
+})
+```
 
 ## Dependency expectations
 
@@ -164,6 +176,14 @@ godot --headless --path .testbed --script res://scripts/validate_multi_gltf_prov
 ```
 
 Keyboard controls inside the proving surface:
+
+- `F1` / `F2` / `F3` — load the packaged project path, copied external device path, or URL source
+- `L` — reload the current source mode
+- `U` — explicitly unload the current result
+- `W` / `A` / `S` / `D` — fly the camera
+- `Q` / `E` — move the camera down/up
+- hold `Shift` — move the camera faster
+- hold left mouse and drag — rotate the fly camera
 
 - `1` / `2` — select the left or right instance
 - `Tab` — cycle the selected instance

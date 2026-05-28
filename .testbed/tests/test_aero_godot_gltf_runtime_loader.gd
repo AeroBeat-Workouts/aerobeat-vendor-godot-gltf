@@ -5,7 +5,7 @@ const LOADER_CANDIDATE_PATHS := [
 	"res://../src/aero_godot_gltf_runtime_loader.gd",
 ]
 const PACKAGED_FIXTURE_PATH := "res://assets/models/alien-planet.glb"
-const MINIMAL_FIXTURE_PATH := "res://tests/fixtures/minimal_runtime_scene.gltf"
+const MINIMAL_FIXTURE_PATH := PACKAGED_FIXTURE_PATH
 const EXPECTED_PACKAGED_SCENE_NAME := "Sketchfab_Scene"
 const EXPECTED_PACKAGED_ROOT_CHILDREN := 1
 const EXTERNAL_FIXTURE_DIRECTORY_NAME := "aerobeat-vendor-godot-gltf-tests"
@@ -175,6 +175,19 @@ func test_loader_can_build_multiple_independent_instances_under_one_root() -> vo
 	assert_ne(left_root, right_root)
 	assert_ne(left_scene, right_scene)
 	aggregate_root.free()
+
+func test_loader_can_unload_generated_scene_roots() -> void:
+	var loader_script := _load_loader_script()
+	assert_true(loader_script != null, "Expected AeroGodotGltfRuntimeLoader script to load")
+	var loader = loader_script.new()
+
+	var scene_result: Dictionary = loader.load_scene({"path": PACKAGED_FIXTURE_PATH})
+	assert_true(scene_result.get("success", false), "Expected packaged GLB fixture to load before unload")
+	var scene_root := scene_result.get("detail", {}).get("scene", null) as Node
+	assert_true(scene_root != null, "Expected loaded scene root to exist before unload")
+	var unload_result: Dictionary = loader.unload_result(scene_result)
+	assert_true(unload_result.get("success", false), "Expected unload_result to report success")
+	assert_eq(unload_result.get("detail", {}).get("freed_roots", 0), 1)
 
 func test_loader_exposes_last_result_for_debugging() -> void:
 	var loader_script := _load_loader_script()
