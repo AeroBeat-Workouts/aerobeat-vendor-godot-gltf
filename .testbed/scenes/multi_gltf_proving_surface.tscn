@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://b2yu6q4h6dp7m"]
 
-[ext_resource type="Script" uid="uid://cf58pyyfnokjn" path="res://scripts/multi_gltf_proving_surface.gd" id="1_script"]
+[ext_resource type="Script" uid="uid://bhq6n37cd57xd" path="res://scripts/multi_gltf_proving_surface.gd" id="1_script"]
 
 [node name="MultiGLTFProvingSurface" type="Node3D" unique_id=534605439]
 script = ExtResource("1_script")

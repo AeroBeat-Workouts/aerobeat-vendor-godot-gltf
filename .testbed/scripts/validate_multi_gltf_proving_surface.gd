@@ -43,14 +43,28 @@ func _run() -> void:
 	var left_position := left_anchor.position
 	var right_position := right_anchor.position
 
+	var hud_label := scene_root.get_node_or_null("CanvasLayer/OverlayMargin/OverlayRow/HUDPanel/HUDMargin/HUDLabel") as RichTextLabel
+	var hud_panel := scene_root.get_node_or_null("CanvasLayer/OverlayMargin/OverlayRow/HUDPanel") as PanelContainer
 	var source_input := scene_root.get_node_or_null("CanvasLayer/OverlayMargin/OverlayRow/ControlsPanel/ControlsMargin/ControlsVBox/SourceInput") as LineEdit
 	var browse_button := scene_root.get_node_or_null("CanvasLayer/OverlayMargin/OverlayRow/ControlsPanel/ControlsMargin/ControlsVBox/TypedSourceButtons/BrowseButton") as Button
 	var file_dialog := scene_root.get_node_or_null("CanvasLayer/SourceFileDialog") as FileDialog
-	if source_input == null or browse_button == null or file_dialog == null:
-		_fail("Expected source input, browse button, and file dialog proving controls to exist")
+	if hud_label == null or hud_panel == null or source_input == null or browse_button == null or file_dialog == null:
+		_fail("Expected overlay drag/input controls to exist")
 		return
 	if file_dialog.access != FileDialog.ACCESS_FILESYSTEM:
 		_fail("Expected proving surface file picker to browse the local filesystem")
+		return
+	if scene_root.call("_control_blocks_camera_drag", hud_label):
+		_fail("Expected passive HUD label to allow camera drag passthrough")
+		return
+	if scene_root.call("_control_blocks_camera_drag", hud_panel):
+		_fail("Expected passive HUD panel background to allow camera drag passthrough")
+		return
+	if not scene_root.call("_control_blocks_camera_drag", source_input):
+		_fail("Expected typed source LineEdit to remain interactive and block drag start")
+		return
+	if not scene_root.call("_control_blocks_camera_drag", browse_button):
+		_fail("Expected browse button to remain interactive and block drag start")
 		return
 
 	var packaged_source: Dictionary = scene_root.call("_manual_source_from_text", PACKAGED_FIXTURE_PATH)
@@ -61,6 +75,25 @@ func _run() -> void:
 	var url_source: Dictionary = scene_root.call("_manual_source_from_text", URL_FIXTURE)
 	if url_source.get("url", "") != URL_FIXTURE or url_source.get("format", "") != "glb":
 		_fail("Expected typed URL source parsing to preserve remote GLB URLs")
+		return
+
+	var original_scale := left_anchor.scale
+	var cycle_scale_event := InputEventKey.new()
+	cycle_scale_event.keycode = KEY_C
+	cycle_scale_event.pressed = true
+	scene_root.call("_unhandled_input", cycle_scale_event)
+	await process_frame
+	if left_anchor.scale == original_scale:
+		_fail("Expected C hotkey to cycle the selected instance scale preset")
+		return
+	var scale_after_c := left_anchor.scale
+	var legacy_scale_event := InputEventKey.new()
+	legacy_scale_event.keycode = KEY_S
+	legacy_scale_event.pressed = true
+	scene_root.call("_unhandled_input", legacy_scale_event)
+	await process_frame
+	if left_anchor.scale != scale_after_c:
+		_fail("Expected S hotkey to remain reserved for fly-camera movement")
 		return
 
 	var absolute_path := ProjectSettings.globalize_path(PACKAGED_FIXTURE_PATH)

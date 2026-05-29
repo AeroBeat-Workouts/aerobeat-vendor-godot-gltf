@@ -87,12 +87,13 @@ func _process(delta: float) -> void:
 	_camera.global_position += input_vector.normalized() * speed * delta
 	_update_hud("Flying")
 
-func _unhandled_input(event: InputEvent) -> void:
+func _input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
-		_drag_rotating = event.pressed
-		Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED if _drag_rotating else Input.MOUSE_MODE_VISIBLE)
-		if not _drag_rotating:
-			_update_hud()
+		if event.pressed and _control_blocks_camera_drag(_hovered_control()):
+			return
+		_set_drag_rotation_active(event.pressed)
+		if _drag_rotating:
+			get_viewport().set_input_as_handled()
 		return
 
 	if event is InputEventMouseMotion and _drag_rotating:
@@ -100,8 +101,10 @@ func _unhandled_input(event: InputEvent) -> void:
 		_camera_pitch_degrees = clamp(_camera_pitch_degrees - event.relative.y * CAMERA_LOOK_SENSITIVITY, -89.0, 89.0)
 		_sync_camera_rotation()
 		_update_hud("Camera look")
+		get_viewport().set_input_as_handled()
 		return
 
+func _unhandled_input(event: InputEvent) -> void:
 	if not (event is InputEventKey) or not event.pressed or event.echo:
 		return
 
@@ -116,7 +119,7 @@ func _unhandled_input(event: InputEvent) -> void:
 			_cycle_dimension("position")
 		KEY_R:
 			_cycle_dimension("rotation")
-		KEY_S:
+		KEY_C:
 			_cycle_dimension("scale")
 		KEY_V:
 			_print_snapshot()
@@ -313,7 +316,7 @@ func _update_hud(status: String = "Ready") -> void:
 	if _hud_label == null:
 		return
 	var snapshots := _snapshot_lines()
-	_hud_label.text = "[b]Vendor GLTF multi-instance proving surface[/b]\nSource mode: %s\nPackaged: %s\nExternal: %s\nURL: %s\nTyped/Browsed: %s\n\nSource controls\n- buttons or [b]F1[/b]/[b]F2[/b]/[b]F3[/b] load packaged, external, or URL source\n- type/paste any [b]res://[/b], absolute path, or web URL then press [b]Load Typed Source[/b] or Enter\n- [b]Browse...[/b] opens a filesystem picker for arbitrary local GLB/GLTF files\n- [b]L[/b] reload current source\n- [b]U[/b] unload current result\n\nTransform controls\n- [b]1[/b]/[b]2[/b] select instance\n- [b]Tab[/b] cycle selected instance\n- [b]P[/b] cycle position preset\n- [b]R[/b] cycle rotation preset\n- [b]S[/b] cycle scale preset\n- [b]V[/b] print transform snapshot\n\nFly camera\n- [b]WASD[/b] move horizontally\n- [b]Q[/b]/[b]E[/b] move down/up\n- hold [b]Shift[/b] to move faster\n- hold left mouse and drag to rotate\n\nStatus: %s\nSelected instance: %s\nCamera: pos=%s pitch=%.2f yaw=%.2f\n\nSnapshots\n%s" % [
+	_hud_label.text = "[b]Vendor GLTF multi-instance proving surface[/b]\nSource mode: %s\nPackaged: %s\nExternal: %s\nURL: %s\nTyped/Browsed: %s\n\nSource controls\n- buttons or [b]F1[/b]/[b]F2[/b]/[b]F3[/b] load packaged, external, or URL source\n- type/paste any [b]res://[/b], absolute path, or web URL then press [b]Load Typed Source[/b] or Enter\n- [b]Browse...[/b] opens a filesystem picker for arbitrary local GLB/GLTF files\n- [b]L[/b] reload current source\n- [b]U[/b] unload current result\n\nTransform controls\n- [b]1[/b]/[b]2[/b] select instance\n- [b]Tab[/b] cycle selected instance\n- [b]P[/b] cycle position preset\n- [b]R[/b] cycle rotation preset\n- [b]C[/b] cycle scale preset\n- [b]V[/b] print transform snapshot\n\nFly camera\n- [b]WASD[/b] move horizontally\n- [b]Q[/b]/[b]E[/b] move down/up\n- hold [b]Shift[/b] to move faster\n- hold left mouse and drag to rotate\n\nStatus: %s\nSelected instance: %s\nCamera: pos=%s pitch=%.2f yaw=%.2f\n\nSnapshots\n%s" % [
 		_current_source_mode,
 		packaged_source_path,
 		external_source_path,
@@ -366,6 +369,33 @@ func _make_external_fixture_copy() -> String:
 	var target_path := target_directory.path_join(EXTERNAL_FIXTURE_FILE_NAME)
 	DirAccess.copy_absolute(ProjectSettings.globalize_path(PACKAGED_FIXTURE_PATH), target_path)
 	return target_path
+
+func _hovered_control() -> Control:
+	var viewport := get_viewport()
+	return viewport.gui_get_hovered_control() if viewport != null else null
+
+func _control_blocks_camera_drag(control: Control) -> bool:
+	var current := control
+	while current != null:
+		if current is BaseButton or current is LineEdit or current is TextEdit:
+			return true
+		if not _is_passive_overlay_control(current) and current.mouse_filter == Control.MOUSE_FILTER_STOP:
+			return true
+		current = current.get_parent() as Control
+	return false
+
+func _is_passive_overlay_control(control: Control) -> bool:
+	return control is Label \
+		or control is RichTextLabel \
+		or control is PanelContainer \
+		or control is BoxContainer \
+		or control is MarginContainer
+
+func _set_drag_rotation_active(active: bool) -> void:
+	_drag_rotating = active
+	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED if _drag_rotating else Input.MOUSE_MODE_VISIBLE)
+	if not _drag_rotating:
+		_update_hud()
 
 func _sync_camera_rotation() -> void:
 	if _camera == null:

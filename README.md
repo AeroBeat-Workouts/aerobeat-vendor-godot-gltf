@@ -183,13 +183,13 @@ Keyboard controls inside the proving surface:
 - `W` / `A` / `S` / `D` — fly the camera
 - `Q` / `E` — move the camera down/up
 - hold `Shift` — move the camera faster
-- hold left mouse and drag — rotate the fly camera
+- hold left mouse and drag — rotate the fly camera, including over passive HUD/panel chrome (interactive controls like buttons and text fields still keep focus)
 
 - `1` / `2` — select the left or right instance
 - `Tab` — cycle the selected instance
 - `P` — cycle parent position presets
 - `R` — cycle parent rotation presets
-- `S` — cycle parent scale presets
+- `C` — cycle parent scale presets
 - `V` — print a transform snapshot to the Godot output log
 
 ### GLB proof fixture coverage
