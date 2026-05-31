@@ -54,7 +54,7 @@ The implementation slice should update the repo-owned `.testbed` scripts/tests/p
 
 **Status:** ✅ Complete
 
-**Results:** The repo-owned `.testbed` scripts/tests were already correctly updated to use `src/` fallbacks (`res://addons/.../src/...` and `res://../src/...`). The remaining stale source-layout references were documentation-level references in `README.md`, which still described the old `globals/` / `loaders/` paths. Updated those docs to `src/aero_godot_gltf_contract.gd` and `src/aero_godot_gltf_runtime_loader.gd`. Validation passed with `godot --headless --path .testbed --import`, `godot --headless --path .testbed --script res://scripts/validate_multi_gltf_proving_surface.gd`, and `godot --headless --path .testbed --script addons/gut/gut_cmdln.gd -gdir=res://tests -ginclude_subdirs -gexit`. Bead lookup failed because `aerobeat-vendor-godot-gltf-cyh` was not present in the repo-local Beads database at execution time.
+**Results:** The repo-owned `.testbed` scripts/tests were already correctly updated to use `src/` fallbacks (`res://addons/.../src/...` and `res://../src/...`). The remaining stale source-layout references were documentation-level references in `README.md`, which still described the old `globals/` / `loaders/` paths. Updated those docs to `src/aero_godot_gltf_contract.gd` and `src/aero_godot_gltf_runtime_loader.gd`. Validation passed with `godot --headless --path .testbed --import`, `godot --headless --path .testbed --script res://scripts/validate_multi_gltf_proving_surface.gd`, and `godot --headless --path .testbed --script addons/gut/gut_cmdln.gd -gdir=res://tests -ginclude_subdirs -gexit`. Pushed in commit `4cc81e1`. Bead lookup failed because `aerobeat-vendor-godot-gltf-cyh` was not present in the repo-local Beads database at execution time.
 
 ---
 
@@ -75,7 +75,7 @@ The implementation slice should update the repo-owned `.testbed` scripts/tests/p
 
 **Status:** ✅ Complete
 
-**Results:** The repo-owned `.testbed` proving scene/scripts/tests/import metadata were already aligned with the moved fixture at `.testbed/assets/models/alien-planet.glb` / `res://assets/models/alien-planet.glb`. The remaining stale references were documentation-level references in `README.md`, which still described `.testbed/tests/fixtures/alien-planet.glb` and `res://tests/fixtures/alien-planet.glb`. Updated those docs to the new `.testbed/assets/models/alien-planet.glb` / `res://assets/models/alien-planet.glb` locations. Validation passed with the same import, proving-surface smoke, and GUT test commands noted in Task 1.
+**Results:** The repo-owned `.testbed` proving scene/scripts/tests/import metadata were already aligned with the moved fixture at `.testbed/assets/models/alien-planet.glb` / `res://assets/models/alien-planet.glb`. The remaining stale references were documentation-level references in `README.md`, which still described `.testbed/tests/fixtures/alien-planet.glb` and `res://tests/fixtures/alien-planet.glb`. Updated those docs to the new `.testbed/assets/models/alien-planet.glb` / `res://assets/models/alien-planet.glb` locations. Validation passed with the same import, proving-surface smoke, and GUT test commands noted in Task 1. Pushed in commit `4cc81e1`.
 
 ---
 
@@ -108,7 +108,7 @@ The implementation slice should update the repo-owned `.testbed` scripts/tests/p
 **Reference Check:** `REF-01` through `REF-06` are satisfied for the coder slice: verified `.testbed` scripts/tests/import metadata already matched `REF-02`, `REF-03`, and `REF-06`, and updated repo docs accordingly. No generated addon copies were modified.
 
 **Commits:**
-- Pending commit
+- `4cc81e1` - Update vendor GLTF testbed path documentation
 
 **Lessons Learned:** Path-move follow-up work can collapse into a documentation repair even when the testbed/runtime code is already correct. It was still worth revalidating the hidden proving surface and loader tests before handoff.
 
