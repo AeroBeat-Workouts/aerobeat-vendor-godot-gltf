@@ -17,14 +17,14 @@ This repo is intentionally vendor-oriented, not workflow-oriented:
 
 The current truthful slice stays vendor-focused while covering both single-scene and multi-instance loading:
 
-- `globals/aero_godot_gltf_contract.gd`
+- `src/aero_godot_gltf_contract.gd`
   - result keys and error codes
   - source normalization/validation
   - source kind (`file`, `buffer`, `url`)
   - source location (`packaged`, `external`, `remote`)
   - supported format vocabulary (`gltf`, `glb`)
   - instance-transform normalization for `position`, `rotation_degrees`, and `scale`
-- `loaders/aero_godot_gltf_runtime_loader.gd`
+- `src/aero_godot_gltf_runtime_loader.gd`
   - `load_source(source, flags := 0)` parses a GLTF/GLB source into `GLTFDocument` + `GLTFState`
   - `generate_scene(load_result, ...)` instantiates a Godot node tree from a successful load result
   - `load_scene(source, flags := 0, scene_options := {})` convenience path for load + instantiate
@@ -161,7 +161,7 @@ The hidden testbed now includes an interactive multi-instance proving surface:
 
 - scene: `.testbed/scenes/multi_gltf_proving_surface.tscn`
 - script: `.testbed/scripts/multi_gltf_proving_surface.gd`
-- fixture: `.testbed/tests/fixtures/alien-planet.glb`
+- fixture: `.testbed/assets/models/alien-planet.glb`
 
 Open the hidden testbed project and run that scene to verify:
 
@@ -197,10 +197,10 @@ Keyboard controls inside the proving surface:
 The hidden testbed now carries a concrete packaged GLB proof fixture copied from the shared environment fixture set:
 
 - source fixture: `/home/derrick/.openclaw/workspace/projects/aerobeat/aerobeat-environment-community/.testbed/assets/models/alien-planet.glb`
-- packaged/internal proof fixture: `.testbed/tests/fixtures/alien-planet.glb`
+- packaged/internal proof fixture: `.testbed/assets/models/alien-planet.glb`
 - external proof path: a temporary absolute copy under `/tmp/aerobeat-vendor-godot-gltf-tests/alien-planet-external.glb`
 
 The runtime-loader test suite proves both code paths against the same binary asset:
 
-- packaged/internal `res://tests/fixtures/alien-planet.glb`
+- packaged/internal `res://assets/models/alien-planet.glb`
 - external absolute-path copy created during the test run and removed afterward

@@ -2,7 +2,7 @@
 
 **Date:** 2026-05-28  
 **Status:** In Progress  
-**Last Updated:** 2026-05-28 11:59 EDT  
+**Last Updated:** 2026-05-31 08:46 EDT  
 **Blocked Reason:** None  
 **Agent:** `cookie`
 
@@ -50,14 +50,11 @@ The implementation slice should update the repo-owned `.testbed` scripts/tests/p
 - `/home/derrick/.openclaw/workspace/projects/aerobeat/aerobeat-vendor-godot-gltf/.testbed/`
 
 **Files Created/Deleted/Modified:**
-- likely `.testbed/scripts/multi_gltf_proving_surface.gd`
-- likely `.testbed/tests/test_aero_godot_gltf_runtime_loader.gd`
-- likely `.testbed/tests/test_aero_godot_gltf_contract.gd`
-- any other repo-owned testbed files still pointing at `globals/` / `loaders/`
+- `README.md`
 
-**Status:** ⏳ Pending
+**Status:** ✅ Complete
 
-**Results:** Pending.
+**Results:** The repo-owned `.testbed` scripts/tests were already correctly updated to use `src/` fallbacks (`res://addons/.../src/...` and `res://../src/...`). The remaining stale source-layout references were documentation-level references in `README.md`, which still described the old `globals/` / `loaders/` paths. Updated those docs to `src/aero_godot_gltf_contract.gd` and `src/aero_godot_gltf_runtime_loader.gd`. Validation passed with `godot --headless --path .testbed --import`, `godot --headless --path .testbed --script res://scripts/validate_multi_gltf_proving_surface.gd`, and `godot --headless --path .testbed --script addons/gut/gut_cmdln.gd -gdir=res://tests -ginclude_subdirs -gexit`. Bead lookup failed because `aerobeat-vendor-godot-gltf-cyh` was not present in the repo-local Beads database at execution time.
 
 ---
 
@@ -74,14 +71,11 @@ The implementation slice should update the repo-owned `.testbed` scripts/tests/p
 - `/home/derrick/.openclaw/workspace/projects/aerobeat/aerobeat-vendor-godot-gltf/.testbed/`
 
 **Files Created/Deleted/Modified:**
-- `.testbed/assets/models/alien-planet.glb.import`
-- `.testbed/scripts/multi_gltf_proving_surface.gd`
-- `.testbed/tests/test_aero_godot_gltf_runtime_loader.gd`
-- any scene/resource strings that still point at `res://tests/fixtures/alien-planet.glb`
+- `README.md`
 
-**Status:** ⏳ Pending
+**Status:** ✅ Complete
 
-**Results:** Pending.
+**Results:** The repo-owned `.testbed` proving scene/scripts/tests/import metadata were already aligned with the moved fixture at `.testbed/assets/models/alien-planet.glb` / `res://assets/models/alien-planet.glb`. The remaining stale references were documentation-level references in `README.md`, which still described `.testbed/tests/fixtures/alien-planet.glb` and `res://tests/fixtures/alien-planet.glb`. Updated those docs to the new `.testbed/assets/models/alien-planet.glb` / `res://assets/models/alien-planet.glb` locations. Validation passed with the same import, proving-surface smoke, and GUT test commands noted in Task 1.
 
 ---
 
@@ -109,14 +103,14 @@ The implementation slice should update the repo-owned `.testbed` scripts/tests/p
 
 **Status:** ⚠️ Partial
 
-**What We Built:** Plan is in execution; implementation pending, manual QA/audit delegated to Derrick by request.
+**What We Built:** Completed the coder slice for the testbed path-move handoff. The actual `.testbed` code/import metadata was already correct for both the `src/` source move and the packaged GLB fixture move; the remaining stale references were in `README.md`, which now documents the current `src/` runtime paths and `.testbed/assets/models/alien-planet.glb` fixture location. Manual QA/audit remains with Derrick per the approved plan.
 
-**Reference Check:** `REF-01` through `REF-06` are identified for execution, but not yet satisfied.
+**Reference Check:** `REF-01` through `REF-06` are satisfied for the coder slice: verified `.testbed` scripts/tests/import metadata already matched `REF-02`, `REF-03`, and `REF-06`, and updated repo docs accordingly. No generated addon copies were modified.
 
 **Commits:**
-- None yet
+- Pending commit
 
-**Lessons Learned:** When source files move into `src/`, hidden testbeds often keep stale fallback paths longer than the runtime code does. Fixture moves also require `.import` metadata updates, not just script constant changes.
+**Lessons Learned:** Path-move follow-up work can collapse into a documentation repair even when the testbed/runtime code is already correct. It was still worth revalidating the hidden proving surface and loader tests before handoff.
 
 ---
 
