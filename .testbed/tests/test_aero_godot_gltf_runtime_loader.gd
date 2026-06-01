@@ -39,6 +39,13 @@ func _make_external_fixture_copy() -> String:
 	_copy_binary_file(source_absolute_path, target_absolute_path)
 	return target_absolute_path
 
+func test_loader_checks_flattened_installed_contract_path() -> void:
+	var loader_source := FileAccess.get_file_as_string("res://../src/aero_godot_gltf_runtime_loader.gd")
+	assert_true(
+		loader_source.contains("res://addons/aerobeat-vendor-godot-gltf/aero_godot_gltf_contract.gd"),
+		"Runtime loader should probe the flattened installed vendor contract path"
+	)
+
 func test_loader_rejects_invalid_sources() -> void:
 	var loader_script := _load_loader_script()
 	assert_true(loader_script != null, "Expected AeroGodotGltfRuntimeLoader script to load")
