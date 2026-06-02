@@ -13,10 +13,10 @@
       "source": "symlink"
     },
     // GUT drives the repo-local test suite inside the hidden testbed/workbench.
-    "gut": {
-      "url": "git@github.com:bitwes/Gut.git",
-      "checkout": "main",
-      "subfolder": "/addons/gut"
+    "aerobeat-vendor-godot-unit-test": {
+      "url": "../../aerobeat-vendor-godot-unit-test",
+      "subfolder": "/",
+      "source": "symlink"
     }
   }
 }
